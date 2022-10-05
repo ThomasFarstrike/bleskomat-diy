@@ -5,10 +5,10 @@ namespace {
 	TFT_eSPI display = TFT_eSPI();
 	const auto bg_color = TFT_WHITE;
 	const auto text_color = TFT_BLACK;
-	const uint8_t text_font = 2;
-	const uint8_t text_size = 1;
-	const uint8_t margin_x = 4;
-	const uint8_t margin_y = 12;
+	const uint8_t text_font = 4;
+	const uint8_t text_size = 2;
+	const uint8_t margin_x = 3;
+	const uint8_t margin_y = 6;
 	std::string current_screen = "";
 
 	struct BoundingBox {
@@ -151,9 +151,9 @@ namespace screen_tft {
 		const int16_t text_y = margin_y;
 		amount_text_bbox = renderText(text, text_x, text_y, true/* center */);
 		const int16_t qr_x = center_x;
-		const int16_t qr_y = amount_text_bbox.y + amount_text_bbox.h + margin_y;
+		const int16_t qr_y = amount_text_bbox.y + amount_text_bbox.h;
 		const int16_t qr_max_w = display.width();
-		const int16_t qr_max_h = display.height() - (qr_y + margin_y);
+		const int16_t qr_max_h = display.height() - qr_y;
 		renderQRCode(qrcodeData, qr_x, qr_y, qr_max_w, qr_max_h, true/* center */);
 		current_screen = "tradeComplete";
 	}
