@@ -11,6 +11,7 @@ namespace {
 
 	float valueIncrement = 1.00;
 	uint16_t numPulses = 0;
+	unsigned short coinInhibitPin;
 	unsigned short coinSignalPin;
 
 	void IRAM_ATTR onPinStateChange() {
@@ -22,6 +23,7 @@ namespace coinAcceptor_hx616 {
 
 	void init() {
 		coinSignalPin = config::getUnsignedShort("coinSignalPin");
+		coinInhibitPin = config::getUnsignedShort("coinSignalPin");
 		valueIncrement = config::getFloat("coinValueIncrement");
 	}
 
@@ -30,11 +32,16 @@ namespace coinAcceptor_hx616 {
 			if (!(coinSignalPin > 0)) {
 				logger::write("Cannot initialize coin acceptor: \"coinSignalPin\" not set", "warn");
 				state = State::failed;
+			} else if (!(coinInhibitPin > 0)) {
+                                logger::write("Cannot initialize coin acceptor: \"coinInhibitPin\" not set", "warn");
+                                state = State::failed;
 			} else {
 				logger::write("Initializing HX616 coin acceptor...");
 				pinMode(coinSignalPin, INPUT_PULLUP);
 				attachInterrupt(coinSignalPin, onPinStateChange, RISING);
+				pinMode(coinInhibitPin, OUTPUT);
 				state = State::initialized;
+				coinAcceptor_hx616::disinhibit();
 			}
 		}
 	}
@@ -46,4 +53,17 @@ namespace coinAcceptor_hx616 {
 	void resetAccumulatedValue() {
 		numPulses = 0;
 	}
+
+	void inhibit() {
+                if (state == State::initialized) {
+                        digitalWrite(coinInhibitPin, LOW);
+                }
+        }
+
+        void disinhibit() {
+                if (state == State::initialized) {
+                        digitalWrite(coinInhibitPin, HIGH);
+                }
+        }
+
 }
