@@ -1,5 +1,16 @@
 #include "screen/tft.h"
 
+// Include the PNG decoder library
+#include <PNGdec.h>
+#include "screen/panda.h" // Image is stored here in an 8 bit array
+
+PNG png; // PNG decoder instance
+
+#define MAX_IMAGE_WDITH 240 // Adjust for your images
+
+int16_t xpos = 0;
+int16_t ypos = 0;
+
 namespace {
 
 	TFT_eSPI display = TFT_eSPI();
@@ -110,6 +121,19 @@ namespace {
 	void clearScreen() {
 		display.fillScreen(bg_color);
 	}
+
+	//=========================================v==========================================
+	//                                      pngDraw
+	//====================================================================================
+	// This next function will be called during decoding of the png file to
+	// render each image line to the TFT.  If you use a different TFT library
+	// you will need to adapt this function to suit.
+	// Callback function to draw pixels to the display
+	void pngDraw(PNGDRAW *pDraw) {
+		uint16_t lineBuffer[MAX_IMAGE_WDITH];
+		png.getLineAsRGB565(pDraw, lineBuffer, PNG_RGB565_BIG_ENDIAN, 0xffffffff);
+		display.pushImage(xpos, ypos + pDraw->y, pDraw->iWidth, 1, lineBuffer);
+	}
 }
 
 namespace screen_tft {
@@ -122,6 +146,25 @@ namespace screen_tft {
 	}
 
 	void showInsertFiatScreen(const float &amount) {
+		if (amount == 0.0) {
+			logger::write("Zero amount so showing banner...");
+			int16_t rc = png.openFLASH((uint8_t *)panda, sizeof(panda), pngDraw);
+			if (rc == PNG_SUCCESS) {
+				Serial.println("Successfully png file");
+				Serial.printf("image specs: (%d x %d), %d bpp, pixel type: %d\n", png.getWidth(), png.getHeight(), png.getBpp(), png.getPixelType());
+				display.startWrite();
+				uint32_t dt = millis();
+				rc = png.decode(NULL, 0);
+				Serial.print(millis() - dt); Serial.println("ms");
+				display.endWrite();
+				// png.close(); // not needed for memory->memory decode
+			}
+		} else {
+			showInsertFiatScreenNonZero(amount);
+		}
+	}
+
+	void showInsertFiatScreenNonZero(const float &amount) {
 		if (current_screen == "insertFiat") {
 			// Clear previous text by drawing a rectangle over it.
 			display.fillRect(
