@@ -23,7 +23,7 @@ namespace coinAcceptor_hx616 {
 
 	void init() {
 		coinSignalPin = config::getUnsignedShort("coinSignalPin");
-		coinInhibitPin = config::getUnsignedShort("coinSignalPin");
+		coinInhibitPin = config::getUnsignedShort("coinInhibitPin");
 		valueIncrement = config::getFloat("coinValueIncrement");
 	}
 
