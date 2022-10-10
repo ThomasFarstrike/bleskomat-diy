@@ -3,6 +3,10 @@
 // Include the PNG decoder library
 #include <PNGdec.h>
 #include "screen/panda.h" // Image is stored here in an 8 bit array
+//#include "screen/bitcoin_200x200.h"
+//#include "screen/bitcoin_logo_240x240.h"
+//#include "screen/bitcoin_logo_240x240_8bit.h"
+#include "screen/bitcoin_logo_240x240_8bit_from_jpg.h"
 
 PNG png; // PNG decoder instance
 
@@ -148,7 +152,9 @@ namespace screen_tft {
 	void showInsertFiatScreen(const float &amount) {
 		if (amount == 0.0) {
 			logger::write("Zero amount so showing banner...");
-			int16_t rc = png.openFLASH((uint8_t *)panda, sizeof(panda), pngDraw);
+			//int16_t rc = png.openFLASH((uint8_t *)bitcoin_btc_logo, sizeof(bitcoin_btc_logo), pngDraw);
+			int16_t rc = png.openFLASH((uint8_t *)bitcoin_240x240, sizeof(bitcoin_240x240), pngDraw);
+			//int16_t rc = png.openFLASH((uint8_t *)panda, sizeof(panda), pngDraw);
 			if (rc == PNG_SUCCESS) {
 				Serial.println("Successfully png file");
 				Serial.printf("image specs: (%d x %d), %d bpp, pixel type: %d\n", png.getWidth(), png.getHeight(), png.getBpp(), png.getPixelType());
@@ -158,7 +164,10 @@ namespace screen_tft {
 				Serial.print(millis() - dt); Serial.println("ms");
 				display.endWrite();
 				// png.close(); // not needed for memory->memory decode
+			} else {
+				Serial.printf("Error with png file: %d\n", rc);
 			}
+			Serial.println("After png file");
 		} else {
 			showInsertFiatScreenNonZero(amount);
 		}
