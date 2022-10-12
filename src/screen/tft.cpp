@@ -11,13 +11,18 @@
 
 // Include the sketch header file that contains the image stored as an array of bytes
 // More than one image array could be stored in each header file.
-#include "screen/jpeg2.h"
+// Tiger works: #include "screen/jpeg2.h"
 
-#include "screen/panda.h" // Image is stored here in an 8 bit array
+// Panda works: #include "screen/panda.h" // Image is stored here in an 8 bit array
+
+//#include "screen/jpg_240x240_depth_8.h"
+//#include "screen/insert_coin.jpg.h"
+#include "screen/logo.png.h"
+
 //#include "screen/bitcoin_200x200.h"
 //#include "screen/bitcoin_logo_240x240.h"
 //#include "screen/bitcoin_logo_240x240_8bit.h"
-#include "screen/bitcoin_logo_240x240_8bit_from_jpg.h"
+//#include "screen/bitcoin_logo_240x240_8bit_from_jpg.h"
 
 PNG png; // PNG decoder instance
 
@@ -283,24 +288,23 @@ namespace screen_tft {
 	void showInsertFiatScreen(const float &amount) {
 		if (amount == 0.0) {
 			logger::write("Zero amount so showing banner...");
-			drawArrayJpeg(Tiger, sizeof(Tiger), 4, 0); // Draw a jpeg image stored in memory
-			/*
+			// works but it is blue: drawArrayJpeg(insert_coin_jpg, sizeof(insert_coin_jpg), 0, 0); // Draw a jpeg image stored in memory
 			//int16_t rc = png.openFLASH((uint8_t *)bitcoin_btc_logo, sizeof(bitcoin_btc_logo), pngDraw);
-			int16_t rc = png.openFLASH((uint8_t *)bitcoin_240x240, sizeof(bitcoin_240x240), pngDraw);
+			//int16_t rc = png.openFLASH((uint8_t *)bitcoin_240x240, sizeof(bitcoin_240x240), pngDraw);
+			int16_t rc = png.openFLASH((uint8_t *)logo_png, sizeof(logo_png), pngDraw);
 			//int16_t rc = png.openFLASH((uint8_t *)panda, sizeof(panda), pngDraw);
 			if (rc == PNG_SUCCESS) {
 				Serial.println("Successfully png file");
 				Serial.printf("image specs: (%d x %d), %d bpp, pixel type: %d\n", png.getWidth(), png.getHeight(), png.getBpp(), png.getPixelType());
 				display.startWrite();
 				uint32_t dt = millis();
-				rc = png.decode(NULL, 0);
+				rc = png.decode(NULL, 0); // 
 				Serial.print(millis() - dt); Serial.println("ms");
 				display.endWrite();
 				// png.close(); // not needed for memory->memory decode
 			} else {
 				Serial.printf("Error with png file: %d\n", rc);
 			}
-			*/
 			Serial.println("After showing image file");
 		} else {
 			showInsertFiatScreenNonZero(amount);
