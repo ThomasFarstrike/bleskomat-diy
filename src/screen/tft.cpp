@@ -9,20 +9,7 @@
 // Return the minimum of two values a and b
 #define minimum(a,b)     (((a) < (b)) ? (a) : (b))
 
-// Include the sketch header file that contains the image stored as an array of bytes
-// More than one image array could be stored in each header file.
-// Tiger works: #include "screen/jpeg2.h"
-
-// Panda works: #include "screen/panda.h" // Image is stored here in an 8 bit array
-
-//#include "screen/jpg_240x240_depth_8.h"
-//#include "screen/insert_coin.jpg.h"
 #include "screen/logo.png.h"
-
-//#include "screen/bitcoin_200x200.h"
-//#include "screen/bitcoin_logo_240x240.h"
-//#include "screen/bitcoin_logo_240x240_8bit.h"
-//#include "screen/bitcoin_logo_240x240_8bit_from_jpg.h"
 
 PNG png; // PNG decoder instance
 
