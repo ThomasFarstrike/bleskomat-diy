@@ -1,6 +1,51 @@
 #include "main.h"
 
+#include <Badge2020_Buzzer.h>
+
 unsigned int buttonDelay;
+
+#include "Badge2020_Buzzer.h"
+#include "Arduino.h"
+
+Badge2020_Buzzer buzzer;
+
+
+// nokia
+// float notes[ 13 ] = { 659.25,587.33,369.99,415.3 ,554.37,493.88,293.66,329.63,493.88,440,277.18,329.63,440 };
+// pump it up
+float notes[ 15 ] = { 392, 392, 392, 440, 440, 466.16, 0, 0, 392, 392, 392, 440, 440, 466.16, 0 };
+float lengths[ 15 ] = { 2, 2, 4, 2, 2, 2, 2, 2,  2, 2, 2, 2, 2, 2, 2 };
+
+Badge2020_Buzzer::Badge2020_Buzzer() {
+  ledcSetup( 5, 3000, 8 );
+  setVolume( 0 );
+  ledcAttachPin(BADGE2020_BUZZER, 0);
+}
+
+void Badge2020_Buzzer::setFrequency( int frequency ) {
+  ledcWriteTone( 0, frequency );
+}
+
+void Badge2020_Buzzer::setVolume( int volume ) {
+  ledcWrite( 0, volume );
+}
+
+void buzzitup() {
+	for( int i = 0; i < 15; i++ ) {
+		float freq = notes[i] * 2;
+		if (freq > 0) {
+			buzzer.setFrequency( freq );
+		} else {
+			buzzer.setVolume( 0 );
+		}
+		delay( 80 * lengths[i] );
+		buzzer.setVolume( 0 );
+		delay( 40 );
+	}
+	buzzer.setVolume(0);
+	//delay(1000 * ( rand() % 40 ) );
+}
+
 
 void setup() {
 	Serial.begin(MONITOR_SPEED);
@@ -16,6 +61,7 @@ void setup() {
 	billAcceptor::init();
 	button::init();
 	buttonDelay = config::getUnsignedInt("buttonDelay");
+	buzzitup();
 }
 
 void disinhibitAcceptors() {
