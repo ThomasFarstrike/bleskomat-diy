@@ -32,14 +32,14 @@ namespace coinAcceptor_hx616 {
 			if (!(coinSignalPin > 0)) {
 				logger::write("Cannot initialize coin acceptor: \"coinSignalPin\" not set", "warn");
 				state = State::failed;
-			} else if (!(coinInhibitPin > 0)) {
-                                logger::write("Cannot initialize coin acceptor: \"coinInhibitPin\" not set", "warn");
-                                state = State::failed;
+			} else if (coinInhibitPin > 0) {
+				// Only initialize if coinInhibitPin is set.
+				// Otherwise, don't fail, because it's optional.
+				pinMode(coinInhibitPin, OUTPUT);
 			} else {
 				logger::write("Initializing HX616 coin acceptor...");
 				pinMode(coinSignalPin, INPUT_PULLUP);
 				attachInterrupt(coinSignalPin, onPinStateChange, RISING);
-				pinMode(coinInhibitPin, OUTPUT);
 				state = State::initialized;
 				coinAcceptor_hx616::disinhibit();
 			}
@@ -55,15 +55,19 @@ namespace coinAcceptor_hx616 {
 	}
 
 	void inhibit() {
-                if (state == State::initialized) {
-                        digitalWrite(coinInhibitPin, LOW);
+                if (state == State::initialized && coinInhibitPin > 0) {
+			digitalWrite(coinInhibitPin, LOW);
+		} else {
+			logger::write("Not inhibiting coin acceptor because state is not initialized or coinInhibitPin is not set.", "warn");
                 }
         }
 
         void disinhibit() {
-                if (state == State::initialized) {
-                        digitalWrite(coinInhibitPin, HIGH);
-                }
+                if (state == State::initialized && coinInhibitPin > 0) {
+			digitalWrite(coinInhibitPin, HIGH);
+		} else {
+			logger::write("Not disinhibiting coin acceptor because state is not initialized or coinInhibitPin is not set.", "warn");
+		}
         }
 
 }
