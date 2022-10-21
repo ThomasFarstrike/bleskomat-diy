@@ -4,17 +4,19 @@
 
 unsigned int buttonDelay;
 
-#include "Badge2020_Buzzer.h"
-#include "Arduino.h"
-
 Badge2020_Buzzer buzzer;
 
 
 // nokia
 // float notes[ 13 ] = { 659.25,587.33,369.99,415.3 ,554.37,493.88,293.66,329.63,493.88,440,277.18,329.63,440 };
+
 // pump it up
-float notes[ 15 ] = { 392, 392, 392, 440, 440, 466.16, 0, 0, 392, 392, 392, 440, 440, 466.16, 0 };
-float lengths[ 15 ] = { 2, 2, 4, 2, 2, 2, 2, 2,  2, 2, 2, 2, 2, 2, 2 };
+float notesPumpItUp[ 15 ] = { 392, 392, 392, 440, 440, 466.16, 0, 0, 392, 392, 392, 440, 440, 466.16, 0 };
+float lengthsPumpItUp[ 15 ] = { 2, 2, 4, 2, 2, 2, 2, 2,  2, 2, 2, 2, 2, 2, 2 };
+
+/// bitcoin billionaire
+float notesBB[ 19 ] = { 440.00,392.00,349.23,329.63,277.18, 293.66, 293.66, 349.23, 293.66 , 392.00, 0, 261.63, 261.63, 293.66, 293.66, 293.66, 293.66, 349.23, 293.66  };
+float lengthsBB[ 19 ] = { 1,1,1,1,1, 3, 3, 1, 1, 12, 2, 1, 1, 1, 1, 1, 1, 3, 12 };
 
 Badge2020_Buzzer::Badge2020_Buzzer() {
   ledcSetup( 5, 3000, 8 );
@@ -30,22 +32,28 @@ void Badge2020_Buzzer::setVolume( int volume ) {
   ledcWrite( 0, volume );
 }
 
-void buzzitup() {
-	for( int i = 0; i < 15; i++ ) {
+void playSong(float notes[], float lengths[], int size, int pauseMs) {
+	for (int i = 0; i < size; i++) {
 		float freq = notes[i] * 2;
 		if (freq > 0) {
-			buzzer.setFrequency( freq );
+			buzzer.setFrequency(freq);
 		} else {
-			buzzer.setVolume( 0 );
+			buzzer.setVolume(0);
 		}
-		delay( 80 * lengths[i] );
-		buzzer.setVolume( 0 );
-		delay( 40 );
+		delay(90 * lengths[i]);
+		buzzer.setVolume(0);
+		delay(pauseMs);
 	}
 	buzzer.setVolume(0);
-	//delay(1000 * ( rand() % 40 ) );
 }
 
+void playBitcoinBillionaire(){
+	playSong(notesBB, lengthsBB, 19, 90);
+}
+
+void playPumpItUp() {
+	playSong(notesPumpItUp, lengthsPumpItUp, 15, 30);
+}
 
 void setup() {
 	Serial.begin(MONITOR_SPEED);
@@ -61,7 +69,6 @@ void setup() {
 	billAcceptor::init();
 	button::init();
 	buttonDelay = config::getUnsignedInt("buttonDelay");
-	buzzitup();
 }
 
 void disinhibitAcceptors() {
@@ -104,6 +111,7 @@ void runAppLoop() {
 	const std::string currentScreen = screen::getCurrentScreen();
 	if (currentScreen == "") {
 		screen::showInsertFiatScreen(0);
+		playPumpItUp();
 	}
 	float accumulatedValue = 0;
 	accumulatedValue += coinAcceptor::getAccumulatedValue();
@@ -133,6 +141,7 @@ void runAppLoop() {
 				screen::showTradeCompleteScreen(accumulatedValue, qrcodeData);
 				writeTradeCompleteLog(accumulatedValue, signedUrl);
 				inhibitAcceptors();
+				playBitcoinBillionaire();
 				tradeCompleteTime = millis();
 			}
 		} else {
@@ -141,6 +150,11 @@ void runAppLoop() {
 			if (amountShown != accumulatedValue) {
 				screen::showInsertFiatScreen(accumulatedValue);
 				amountShown = accumulatedValue;
+				// play sound that gets higher with value
+				float freq = 420 + accumulatedValue * 420;
+				buzzer.setFrequency(freq);
+				delay(20);
+				buzzer.setVolume(0);
 			}
 		}
 	} else if (currentScreen == "tradeComplete") {
@@ -152,6 +166,7 @@ void runAppLoop() {
 			amountShown = 0;
 			screen::showInsertFiatScreen(0);
 			logger::write("Screen cleared");
+			playPumpItUp();
 		}
 	}
 }

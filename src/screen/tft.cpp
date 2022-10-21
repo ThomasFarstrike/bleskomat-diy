@@ -1,30 +1,21 @@
 #include "screen/tft.h"
 
-// Include the PNG decoder library
-#include <PNGdec.h>
-
-// JPEG decoder library
 #include <JPEGDecoder.h>
 
 // Return the minimum of two values a and b
 #define minimum(a,b)     (((a) < (b)) ? (a) : (b))
 
-#include "screen/logo.png.h"
-
-PNG png; // PNG decoder instance
-
-#define MAX_IMAGE_WDITH 240 // Adjust for your images
-
-int16_t xpos = 0;
-int16_t ypos = 0;
+#include "screen/bitcoin-logo.jpg.h"
 
 namespace {
 
 	TFT_eSPI display = TFT_eSPI();
-	const auto bg_color = TFT_WHITE;
-	const auto text_color = TFT_BLACK;
+	//const auto bg_color = TFT_WHITE;
+	//const auto text_color = TFT_BLACK;
+	const auto bg_color = TFT_BLACK;
+	const auto text_color = TFT_WHITE;
 	const uint8_t text_font = 4;
-	const uint8_t text_size = 2;
+	const uint8_t text_size = 1;
 	const uint8_t margin_x = 3;
 	const uint8_t margin_y = 6;
 	std::string current_screen = "";
@@ -127,19 +118,6 @@ namespace {
 
 	void clearScreen() {
 		display.fillScreen(bg_color);
-	}
-
-	//=========================================v==========================================
-	//                                      pngDraw
-	//====================================================================================
-	// This next function will be called during decoding of the png file to
-	// render each image line to the TFT.  If you use a different TFT library
-	// you will need to adapt this function to suit.
-	// Callback function to draw pixels to the display
-	void pngDraw(PNGDRAW *pDraw) {
-		uint16_t lineBuffer[MAX_IMAGE_WDITH];
-		png.getLineAsRGB565(pDraw, lineBuffer, PNG_RGB565_BIG_ENDIAN, 0xffffffff);
-		display.pushImage(xpos, ypos + pDraw->y, pDraw->iWidth, 1, lineBuffer);
 	}
 
 	//####################################################################################################
@@ -248,14 +226,16 @@ namespace {
 	//####################################################################################################
 	void drawArrayJpeg(const uint8_t arrayname[], uint32_t array_size, int xpos, int ypos) {
 
-		int x = xpos;
-		int y = ypos;
-
 		JpegDec.decodeArray(arrayname, array_size);
 
 		jpegInfo(); // Print information from the JPEG file (could comment this line out)
 
-		renderJPEG(x, y);
+		// center x?
+		if (xpos == -1) {
+			xpos = (display.width() - JpegDec.width) / 2;
+		}
+
+		renderJPEG(xpos, ypos);
 
 		Serial.println("#########################");
 	}
@@ -273,32 +253,6 @@ namespace screen_tft {
 	}
 
 	void showInsertFiatScreen(const float &amount) {
-		if (amount == 0.0) {
-			logger::write("Zero amount so showing banner...");
-			// works but it is blue: drawArrayJpeg(insert_coin_jpg, sizeof(insert_coin_jpg), 0, 0); // Draw a jpeg image stored in memory
-			//int16_t rc = png.openFLASH((uint8_t *)bitcoin_btc_logo, sizeof(bitcoin_btc_logo), pngDraw);
-			//int16_t rc = png.openFLASH((uint8_t *)bitcoin_240x240, sizeof(bitcoin_240x240), pngDraw);
-			int16_t rc = png.openFLASH((uint8_t *)logo_png, sizeof(logo_png), pngDraw);
-			//int16_t rc = png.openFLASH((uint8_t *)panda, sizeof(panda), pngDraw);
-			if (rc == PNG_SUCCESS) {
-				Serial.println("Successfully png file");
-				Serial.printf("image specs: (%d x %d), %d bpp, pixel type: %d\n", png.getWidth(), png.getHeight(), png.getBpp(), png.getPixelType());
-				display.startWrite();
-				uint32_t dt = millis();
-				rc = png.decode(NULL, 0); // 
-				Serial.print(millis() - dt); Serial.println("ms");
-				display.endWrite();
-				// png.close(); // not needed for memory->memory decode
-			} else {
-				Serial.printf("Error with png file: %d\n", rc);
-			}
-			Serial.println("After showing image file");
-		} else {
-			showInsertFiatScreenNonZero(amount);
-		}
-	}
-
-	void showInsertFiatScreenNonZero(const float &amount) {
 		if (current_screen == "insertFiat") {
 			// Clear previous text by drawing a rectangle over it.
 			display.fillRect(
@@ -318,6 +272,10 @@ namespace screen_tft {
 		const int16_t text_y = margin_y;
 		amount_text_bbox = renderText(text, text_x, text_y, true/* center */);
 		current_screen = "insertFiat";
+
+		// draw logo:
+		const int16_t qr_y = amount_text_bbox.y + amount_text_bbox.h;
+		drawArrayJpeg(insert_coin_jpg, sizeof(insert_coin_jpg), -1, qr_y); // -1 means center x
 	}
 
 	void showTradeCompleteScreen(const float &amount, const std::string &qrcodeData) {
