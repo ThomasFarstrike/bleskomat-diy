@@ -33,6 +33,7 @@ void Badge2020_Buzzer::setVolume( int volume ) {
 }
 
 void playSong(float notes[], float lengths[], int size, int pauseMs) {
+	return;
 	for (int i = 0; i < size; i++) {
 		float freq = notes[i] * 2;
 		if (freq > 0) {

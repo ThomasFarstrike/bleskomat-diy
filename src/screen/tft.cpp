@@ -10,10 +10,8 @@
 namespace {
 
 	TFT_eSPI display = TFT_eSPI();
-	//const auto bg_color = TFT_WHITE;
-	//const auto text_color = TFT_BLACK;
-	const auto bg_color = TFT_BLACK;
-	const auto text_color = TFT_WHITE;
+	const auto bg_color = TFT_WHITE;
+	const auto text_color = TFT_BLACK;
 	const uint8_t text_font = 4;
 	const uint8_t text_size = 1;
 	const uint8_t margin_x = 3;
@@ -70,6 +68,7 @@ namespace {
 		const uint16_t &max_h,
 		const bool &center = true
 	) {
+		Serial.println("renderQRCode x,y,max_w,max_h: " + String(x) + "," + String(y) + "," + String(max_w) + "," + String(max_h)); // renderQRCode x,y,max_w,max_h: 120,32,240,208
 		BoundingBox bbox;
 		try {
 			const char* data = t_data.c_str();
@@ -81,6 +80,7 @@ namespace {
 				const int8_t result = qrcode_initText(&qrcode, qrcodeData, version, ECC_LOW, data);
 				if (result == 0) {
 					// QR encoding successful.
+					Serial.println("qrcode.size: " + String(qrcode.size));	// qrcode.size: around 49-53, depending on the URL size, which depends on the amount etc...
 					uint8_t scale = std::min(std::floor(max_w / qrcode.size), std::floor(max_h / qrcode.size));
 					uint16_t w = qrcode.size * scale;
 					uint16_t h = w;
@@ -89,6 +89,11 @@ namespace {
 					if (center) {
 						box_x -= (w / 2);
 					}
+
+					// center box vertically on the remaining space
+					box_y += (max_h - h)/ 2; // max_height - actual_height / 2
+					//Serial.println("box_y after vertically centering on remaining space = " + String(box_y));
+
 					display.fillRect(box_x, box_y, w, h, bg_color);
 					for (uint8_t y = 0; y < qrcode.size; y++) {
 						for (uint8_t x = 0; x < qrcode.size; x++) {
@@ -273,9 +278,8 @@ namespace screen_tft {
 		amount_text_bbox = renderText(text, text_x, text_y, true/* center */);
 		current_screen = "insertFiat";
 
-		// draw logo:
-		const int16_t qr_y = amount_text_bbox.y + amount_text_bbox.h;
-		drawArrayJpeg(insert_coin_jpg, sizeof(insert_coin_jpg), -1, qr_y); // -1 means center x
+		// draw logo below the text:
+		drawArrayJpeg(logo_jpg, sizeof(logo_jpg), -1, amount_text_bbox.y + amount_text_bbox.h); // -1 means center x
 	}
 
 	void showTradeCompleteScreen(const float &amount, const std::string &qrcodeData) {
@@ -283,7 +287,7 @@ namespace screen_tft {
 		const std::string text = getAmountFiatCurrencyString(amount);
 		const int16_t center_x = display.width() / 2;
 		const int16_t text_x = center_x;
-		const int16_t text_y = margin_y;
+		const int16_t text_y = 1; // minimal margin above text so there is maximal margin for the QR code
 		amount_text_bbox = renderText(text, text_x, text_y, true/* center */);
 		const int16_t qr_x = center_x;
 		const int16_t qr_y = amount_text_bbox.y + amount_text_bbox.h;
