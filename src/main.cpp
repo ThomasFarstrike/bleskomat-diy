@@ -6,34 +6,15 @@ unsigned int buttonDelay;
 
 Badge2020_Buzzer buzzer;
 
-
-// nokia
-// float notes[ 13 ] = { 659.25,587.33,369.99,415.3 ,554.37,493.88,293.66,329.63,493.88,440,277.18,329.63,440 };
-
-// pump it up
+// Pump it up: Don't you know pump it up, you've got to pump it up.
 float notesPumpItUp[ 15 ] = { 392, 392, 392, 440, 440, 466.16, 0, 0, 392, 392, 392, 440, 440, 466.16, 0 };
 float lengthsPumpItUp[ 15 ] = { 2, 2, 4, 2, 2, 2, 2, 2,  2, 2, 2, 2, 2, 2, 2 };
 
-/// bitcoin billionaire
-float notesBB[ 19 ] = { 440.00,392.00,349.23,329.63,277.18, 293.66, 293.66, 349.23, 293.66 , 392.00, 0, 261.63, 261.63, 293.66, 293.66, 293.66, 293.66, 349.23, 293.66  };
-float lengthsBB[ 19 ] = { 1,1,1,1,1, 3, 3, 1, 1, 12, 2, 1, 1, 1, 1, 1, 1, 3, 12 };
-
-Badge2020_Buzzer::Badge2020_Buzzer() {
-  ledcSetup( 5, 3000, 8 );
-  setVolume( 0 );
-  ledcAttachPin(BADGE2020_BUZZER, 0);
-}
-
-void Badge2020_Buzzer::setFrequency( int frequency ) {
-  ledcWriteTone( 0, frequency );
-}
-
-void Badge2020_Buzzer::setVolume( int volume ) {
-  ledcWrite( 0, volume );
-}
+/// Bitcoin Billionaire: I'm a Bitcoin Billionaire, spending money like I don't care.
+float notesBB[ 16 ] = { 261.63, 277.18, 293.66, 293.66, 349.23, 293.66 , 392.00, 0, 261.63, 277.18, 293.66, 293.66, 277.18, 293.66, 349.23, 293.66  };
+float lengthsBB[ 16 ] = { 1, 1, 3, 3, 1, 1, 12, 2, 1, 1, 1, 1, 1, 1, 3, 12 };
 
 void playSong(float notes[], float lengths[], int size, int pauseMs) {
-	return;
 	for (int i = 0; i < size; i++) {
 		float freq = notes[i] * 2;
 		if (freq > 0) {
@@ -49,7 +30,7 @@ void playSong(float notes[], float lengths[], int size, int pauseMs) {
 }
 
 void playBitcoinBillionaire(){
-	playSong(notesBB, lengthsBB, 19, 90);
+	playSong(notesBB, lengthsBB, 16, 90);
 }
 
 void playPumpItUp() {
